@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cyberpunk Encryption Demo</title>
+  <style>
+    body {
+      background-color: #0a0a0a;
+      color: #00ffe7;
+      font-family: 'Courier New', monospace;
+      padding: 40px;
+    }
+    .terminal {
+      background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
+      border: 2px solid #00ffe7;
+      border-radius: 10px;
+      padding: 20px;
+      width: 100%;
+      max-width: 900px;
+      margin: auto;
+      box-shadow: 0 0 20px #00ffe7;
+    }
+    .line {
+      display: block;
+      margin-bottom: 10px;
+      white-space: pre-wrap;
+    }
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      height: 16px;
+      background-color: #00ffe7;
+      animation: blink 1s infinite;
+      vertical-align: bottom;
+    }
+    .pulse {
+      animation: pulse 1s infinite;
+    }
+    @keyframes blink {
+      0%, 50%, 100% { opacity: 1; }
+      25%, 75% { opacity: 0; }
+    }
+    @keyframes pulse {
+      0% { color: #00ffe7; text-shadow: 0 0 5px #00ffe7; }
+      50% { color: #ffffff; text-shadow: 0 0 20px #00ffe7; }
+      100% { color: #00ffe7; text-shadow: 0 0 5px #00ffe7; }
+    }
+  </style>
+</head>
+<body>
+  <div class="terminal" id="terminal"></div>
+  <script>
+    window.onload = function() {
+      const terminal = document.getElementById("terminal");
+      const lines = [
+        "Downloading file: installer.exe",
+        "Source: https://example.com/downloads/installer.exe",
+        "Download complete ✅",
+        "Get-FileHash -Path \"installer.exe\" -Algorithm SHA256",
+        "SHA256: E3B0C44298FC1C149AFBF4C8996FB924",
+        "        27AE41E4649B934CA495991B7852B855",
+        "openssl enc -aes-256-cbc -salt -in installer.exe -out installer.enc",
+        "Encryption complete ✅",
+        "openssl enc -aes-256-cbc -d -in installer.enc -out installer_decrypted.exe",
+        "Decryption complete ✅",
+        "Get-FileHash -Path \"installer_decrypted.exe\" -Algorithm SHA256",
+        "SHA256: E3B0C44298FC1C149AFBF4C8996FB924",
+        "        27AE41E4649B934CA495991B7852B855",
+        "Match: ✅ Original and Decrypted file are identical"
+      ];
+
+      let currentLine = 0;
+      let charIndex = 0;
+      const speed = 20;
+      let lineElement = null;
+      let hashLines = [4, 5, 11, 12];
+      let cursor = null;
+
+      function resetTerminal() {
+        if (cursor) {
+          terminal.removeChild(cursor);
+          cursor = null;
+        }
+        terminal.innerHTML = "";
+        currentLine = 0;
+        charIndex = 0;
+        lineElement = null;
+        setTimeout(typeLine, 1000);
+      }
+
+      function typeLine() {
+        if (!lineElement) {
+          lineElement = document.createElement("span");
+          lineElement.className = "line";
+          terminal.appendChild(lineElement);
+        }
+
+        const currentText = lines[currentLine];
+
+        if (charIndex < currentText.length) {
+          lineElement.textContent += currentText[charIndex++];
+          setTimeout(typeLine, speed);
+        } else {
+          if (hashLines.includes(currentLine)) {
+            lineElement.classList.add("pulse");
+          }
+          lineElement = null;
+          charIndex = 0;
+          currentLine++;
+          if (currentLine < lines.length) {
+            setTimeout(typeLine, 500);
+          } else {
+            cursor = document.createElement("span");
+            cursor.className = "cursor";
+            terminal.appendChild(cursor);
+            setTimeout(resetTerminal, 3000);
+          }
+        }
+      }
+
+      typeLine();
+    };
+  </script>
+</body>
+</html>
